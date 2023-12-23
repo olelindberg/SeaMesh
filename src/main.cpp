@@ -41,7 +41,7 @@ int main() {
 
   double area_min = 1.0e10;
 
-  int quadtree_depth = 2;
+  // int quadtree_depth = 2;
   double quadtree_leaf_length = 0.000001;
   bool make_quadtree = true;
   bool show_quadtree = true;
@@ -59,13 +59,11 @@ int main() {
   std::vector<SHPObject> shape_polygons_closed;
   std::vector<SHPObject> shape_polygons_open;
   for (auto &shape_polygon : *shape_polygons) {
-    if (!ShapeFileUtil::isClosedPolygon(shape_polygon)) {
+
+    if (!ShapeFileUtil::isClosedPolygon(shape_polygon))
       shape_polygons_open.push_back(shape_polygon);
-    } else {
+    else
       shape_polygons_closed.push_back(shape_polygon);
-      if (ShapeFileUtil::isClockwisePolygon(shape_polygon)) {
-      }
-    }
   }
 
   //-------------------------------------------------------------------------//
@@ -164,7 +162,7 @@ int main() {
   // Delete islands too small:
   //-------------------------------------------------------------------------//
   for (auto it = multi_polygon->begin(); it != multi_polygon->end();) {
-    std::cout << boost::geometry::area(it->outer()) << std::endl;
+
     if (boost::geometry::area(it->outer()) < area_min) {
       it = multi_polygon->erase(it);
     } else {
@@ -173,22 +171,15 @@ int main() {
   }
 
   std::cout << "Creating boost multi polygon ...\n";
-  // auto multi_polygon = shapefilereader.multi_polygon;
-  //   (*multi_polygon)[0].inners().emplace_back();
-  //   boost::geometry::append((*multi_polygon)[0].inners().back(),
-  //                           point_t(350000.0, 5900000.0));
-  //   boost::geometry::append((*multi_polygon)[0].inners().back(),
-  //                           point_t(950000.0, 5900000.0));
-  //   boost::geometry::append((*multi_polygon)[0].inners().back(),
-  //                           point_t(950000.0, 6500000.0));
-  //   boost::geometry::append((*multi_polygon)[0].inners().back(),
-  //                           point_t(350000.0, 6500000.0));
-  //   boost::geometry::append((*multi_polygon)[0].inners().back(),
-  //                           point_t(350000.0, 5900000.0));
-
-  for (auto &polygon : (*multi_polygon)[0].inners()) {
-    std::cout << boost::geometry::area(polygon) << std::endl;
-  }
+  // polygon_t polygon;
+  // boost::geometry::append(polygon.outer().back(), point_t(350000.0,
+  // 5900000.0)); boost::geometry::append(polygon.outer().back(),
+  // point_t(950000.0, 5900000.0));
+  // boost::geometry::append(polygon.outer().back(), point_t(950000.0,
+  // 6500000.0)); boost::geometry::append(polygon.outer().back(),
+  // point_t(350000.0, 6500000.0));
+  // boost::geometry::append(polygon.outer().back(), point_t(350000.0,
+  // 5900000.0)); multi_polygon->push_back(polygon);
 
   BoostRtreeSearch<polygon_t> search_tree((*multi_polygon));
 
@@ -225,7 +216,7 @@ int main() {
               << "km times ";
     std::cout << (quadtree->get_ymax() - quadtree->get_ymin()) / 1000.0
               << "km\n";
-    for (int i = 0; i < 0; ++i) {
+    for (int i = 0; i < 4; ++i) {
 
       segments.clear();
 
