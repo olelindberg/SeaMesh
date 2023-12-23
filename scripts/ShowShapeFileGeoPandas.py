@@ -13,6 +13,7 @@ fp = "../data/Topo-bathy/shape_format/data/Kystlinie.shp"
 data = gpd.read_file(fp)
 type(data)
 
+print(data["geometry"][0])
 print(data.head(2))
 
 data.plot()
