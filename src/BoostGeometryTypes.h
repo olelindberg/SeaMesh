@@ -7,6 +7,8 @@
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
 #include <boost/geometry/geometries/box.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
+#include <boost/geometry/geometries/linestring.hpp>
+#include <boost/geometry/geometries/multi_linestring.hpp>
 #include <boost/geometry/geometries/multi_polygon.hpp>
 #include <boost/geometry/geometries/point.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -17,7 +19,7 @@ typedef boost::geometry::model::point<double, 2, boost::geometry::cs::cartesian>
 
 typedef boost::geometry::model::segment<point_t> segment_t;
 typedef boost::geometry::model::box<point_t> box_t;
-
+typedef boost::geometry::model::linestring<point_t> linestring_t;
 typedef std::pair<box_t, unsigned> value_t;
 
 // Template parmeters:
@@ -32,5 +34,7 @@ typedef boost::geometry::model::polygon<point_t, true> polygon_t;
 
 // typedef boost::geometry::model::polygon<point_t, false, false> polygon_t;
 typedef boost::geometry::model::multi_polygon<polygon_t> multi_polygon_t;
+typedef boost::geometry::model::multi_linestring<linestring_t>
+    multi_linestring_t;
 
 #endif // BOOST_GEOMETRY_TYPES_H
