@@ -1,1 +1,2 @@
 add_subdirectory(test01_boost_rtree)
+add_subdirectory(test02_boost_polygon_voronoi)
