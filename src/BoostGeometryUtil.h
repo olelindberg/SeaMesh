@@ -20,6 +20,17 @@ public:
     for (auto &point : points)
       boost::geometry::append(polygon, point_t(point(0), point(1)));
   }
+
+  static void removeSmallPolygons(double area_min,
+                                  multi_polygon_t &multi_polygon) {
+    for (auto it = multi_polygon.begin(); it != multi_polygon.end();) {
+      if (boost::geometry::area(it->outer()) < area_min) {
+        it = multi_polygon.erase(it);
+      } else {
+        ++it;
+      }
+    }
+  }
 };
 
 #endif // BOOST_GEOMETRY_UTIL_H

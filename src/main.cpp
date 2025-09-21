@@ -5,25 +5,12 @@
 #include "QuadTree.h"
 #include "QuadTreeBuilder.h"
 #include "QuadTreeSearch.h"
-#include "ShapeFileReader.h"
+#include "ShapeFileReader.hpp"
+#include "ShapeFileToBoostGeometry.hpp"
 #include "Timer.h"
 #include "VtkQuadTreeUtil.h"
-
-#include "vtkAutoInit.h"
-VTK_MODULE_INIT(vtkRenderingOpenGL2); // VTK was built with vtkRenderingOpenGL2
-VTK_MODULE_INIT(vtkInteractionStyle);
-
 #include "VtkRunner.hpp"
 #include "VtkUtil.h"
-
-#include "vtkRenderWindow.h"
-#include "vtkRenderer.h"
-#include <vtkAxesActor.h>
-#include <vtkFollower.h>
-#include <vtkInteractorStyleTrackballCamera.h>
-#include <vtkLineSource.h>
-#include <vtkOrientationMarkerWidget.h>
-#include <vtkRenderWindowInteractor.h>
 
 #include <Eigen/Dense>
 
@@ -33,19 +20,13 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 #include <memory>
 #include <vector>
 
-double distance(double x1, double y1, double x2, double y2) {
-  auto dx = x2 - x1;
-  auto dy = y2 - y1;
-  return std::sqrt(dx * dx + dy * dy);
-}
-
 int main() {
 
   double area_min = 1.0e9;
 
   // int quadtree_depth = 2;
   double quadtree_leaf_length = 0.000001;
-  int quadtree_subdivisions = 5;
+  int quadtree_subdivisions = 3;
   bool make_quadtree = true;
   bool show_quadtree = true;
   bool show_direction_vectors = true;
@@ -62,120 +43,20 @@ int main() {
     auto shape_polygons = shapefilereader.getPolygons();
 
     //-------------------------------------------------------------------------//
-    // Find open polygons:
+    // Merge open connected polygons to closed polygons:
     //-------------------------------------------------------------------------//
     std::vector<SHPObject> shape_polygons_closed;
-    std::vector<SHPObject> shape_polygons_open;
-    for (auto &shape_polygon : *shape_polygons) {
-
-      if (!ShapeFileUtil::isClosedPolygon(shape_polygon))
-        shape_polygons_open.push_back(shape_polygon);
-      else
-        shape_polygons_closed.push_back(shape_polygon);
-    }
-
-    //-------------------------------------------------------------------------//
-    // Merge open polygons:
-    //-------------------------------------------------------------------------//
-    for (auto polygon1 = shape_polygons_open.begin();
-         polygon1 != shape_polygons_open.end();) {
-      for (auto polygon2 = shape_polygons_open.begin();
-           polygon2 != shape_polygons_open.end();) {
-
-        auto iterator_updated = false;
-        if (polygon1 != polygon2) {
-
-          if (distance(polygon1->padfX[0], polygon1->padfY[0],
-                       polygon2->padfX[0], polygon2->padfY[0]) <
-              std::numeric_limits<double>::epsilon()) {
-            std::cout << "We have a match1\n";
-            std::cout << polygon1->padfX[0] << " " << polygon1->padfY[0]
-                      << std::endl;
-            std::cout << polygon2->padfX[0] << " " << polygon2->padfY[0]
-                      << std::endl;
-          }
-
-          else if (distance(polygon1->padfX[0], polygon1->padfY[0],
-                            polygon2->padfX[polygon2->nVertices - 1],
-                            polygon2->padfY[polygon2->nVertices - 1]) <
-                   std::numeric_limits<double>::epsilon()) {
-
-            // Create new polygon:
-            SHPObject polygon_new;
-            ShapeFileUtil::merge(*polygon2, *polygon1, polygon_new);
-
-            // Assign the new polygon and erase the old:
-            *polygon1 = polygon_new;
-            polygon2 = shape_polygons_open.erase(polygon2);
-            iterator_updated = true;
-
-          }
-
-          else if (distance(polygon1->padfX[polygon1->nVertices - 1],
-                            polygon1->padfY[polygon1->nVertices - 1],
-                            polygon2->padfX[polygon2->nVertices - 1],
-                            polygon2->padfY[polygon2->nVertices - 1]) <
-                   std::numeric_limits<double>::epsilon()) {
-            std::cout << "We have a match3\n";
-            std::cout << polygon1->padfX[polygon1->nVertices - 1] << " "
-                      << polygon1->padfY[polygon1->nVertices - 1] << std::endl;
-            std::cout << polygon2->padfX[polygon2->nVertices - 1] << " "
-                      << polygon2->padfY[polygon2->nVertices - 1] << std::endl;
-          }
-
-          else if (distance(polygon1->padfX[polygon1->nVertices - 1],
-                            polygon1->padfY[polygon1->nVertices - 1],
-                            polygon2->padfX[0], polygon2->padfY[0]) <
-                   std::numeric_limits<double>::epsilon()) {
-
-            // Merge and create new polygon:
-            SHPObject polygon_new;
-            ShapeFileUtil::merge(*polygon1, *polygon2, polygon_new);
-
-            *polygon1 = polygon_new;
-            polygon2 = shape_polygons_open.erase(polygon2);
-            iterator_updated = true;
-          }
-        }
-        if (!iterator_updated)
-          ++polygon2;
-      }
-      ++polygon1;
-    }
-
-    //-------------------------------------------------------------------------//
-    // Add merged open polygons, which are now closed, to closed polygons:
-    //-------------------------------------------------------------------------//
-    for (auto &shape_polygon : shape_polygons_open) {
-      if (ShapeFileUtil::isClosedPolygon(shape_polygon)) {
-        shape_polygons_closed.push_back(shape_polygon);
-      }
-    }
+    ShapeFileUtil::mergeOpenPolygons(*shape_polygons, shape_polygons_closed);
 
     //-------------------------------------------------------------------------//
     // Create boost geometry multi polygon:
     //-------------------------------------------------------------------------//
-    multi_polygon->resize(shape_polygons_closed.size());
-    for (int i = 0; i < shape_polygons_closed.size(); ++i) {
-      (*multi_polygon)[i].outer().reserve(shape_polygons_closed[i].nVertices);
-      for (int j = 0; j < shape_polygons_closed[i].nVertices; ++j) {
-        boost::geometry::append((*multi_polygon)[i].outer(),
-                                point_t(shape_polygons_closed[i].padfX[j],
-                                        shape_polygons_closed[i].padfY[j]));
-      }
-    }
+    ShapeFileToBoostGeometry::create(shape_polygons_closed, *multi_polygon);
 
     //-------------------------------------------------------------------------//
     // Delete islands too small:
     //-------------------------------------------------------------------------//
-
-    for (auto it = multi_polygon->begin(); it != multi_polygon->end();) {
-      if (boost::geometry::area(it->outer()) < area_min) {
-        it = multi_polygon->erase(it);
-      } else {
-        ++it;
-      }
-    }
+    BoostGeomtryUtil::removeSmallPolygons(area_min, *multi_polygon);
 
   } else {
 

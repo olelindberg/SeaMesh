@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import shapefile as sf
 import numpy as np
 
-filepath = "../data/Topo-bathy/shape_format/data/Kystlinie.shp"
+filepath = "data/Topo-bathy/shape_format/data/Kystlinie.shp"
 # filepath = "../data/Topo-bathy/shape_format/data/Hav_dybde_5m_2005.shp"
 # filepath = "../data/Topo-bathy/shape_format/data/Land_hojde_5m_2005.shp"
 # filepath = "../data/coastlines-split-3857/lines.shp"

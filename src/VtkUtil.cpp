@@ -12,7 +12,6 @@
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
 #include <vtkPolyDataNormals.h>
-#include <vtkPolyLine.h>
 #include <vtkProperty.h>
 #include <vtkSphereSource.h>
 #include <vtkVertexGlyphFilter.h>
@@ -129,40 +128,6 @@ VtkUtil::polyline(const std::vector<Eigen::Vector3d> &pointset,
   for (auto &point : pointset)
     points->InsertNextPoint(point(0), point(1), point(2));
   return polyline(points, color);
-}
-
-vtkSmartPointer<vtkActor>
-VtkUtil::polyline(const std::vector<point_t> &pointset, std::string color) {
-  vtkSmartPointer<vtkPoints> points = vtkPoints::New();
-  for (auto &point : pointset) {
-    points->InsertNextPoint(point.get<0>(), point.get<1>(), 0.0);
-  }
-  return polyline(points, color);
-}
-
-vtkSmartPointer<vtkActor> VtkUtil::polyline(vtkSmartPointer<vtkPoints> &points,
-                                            std::string color) {
-  vtkNew<vtkPolyLine> polyLine;
-  polyLine->GetPointIds()->SetNumberOfIds(points->GetNumberOfPoints());
-  for (unsigned int i = 0; i < points->GetNumberOfPoints(); i++)
-    polyLine->GetPointIds()->SetId(i, i);
-
-  vtkNew<vtkCellArray> cells;
-  cells->InsertNextCell(polyLine);
-
-  vtkNew<vtkPolyData> polyData;
-  polyData->SetPoints(points);
-  polyData->SetLines(cells);
-
-  // Setup actor and mapper
-  vtkNew<vtkPolyDataMapper> mapper;
-  mapper->SetInputData(polyData);
-
-  vtkNew<vtkActor> actor;
-  actor->SetMapper(mapper);
-  vtkNew<vtkNamedColors> colors;
-  actor->GetProperty()->SetColor(colors->GetColor3d(color).GetData());
-  return actor;
 }
 
 vtkSmartPointer<vtkInteractorObserver> VtkUtil::orientationMarker() {

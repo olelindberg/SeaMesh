@@ -1,13 +1,7 @@
-#include <boost/polygon/voronoi.hpp>
-
-#include <boost/polygon/segment_data.hpp>
-
 #include <iostream>
 
+#include "../../BoostPolygonTypes.hpp"
 #include "../../VtkRunner.hpp"
-
-typedef boost::polygon::point_data<double> Point;
-typedef boost::polygon::segment_data<double> Segment;
 
 int main() {
 
