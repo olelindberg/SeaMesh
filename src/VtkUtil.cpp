@@ -58,7 +58,7 @@ VtkUtil::points(vtkSmartPointer<vtkPoints> &points,
   actor->SetMapper(mapper);
 
   vtkNew<vtkNamedColors> colors;
-  actor->GetProperty()->SetColor(colors->GetColor3d(color).GetData());
+  //  actor->GetProperty()->SetColor(colors->GetColor3d(color).GetData());
   actor->GetProperty()->SetPointSize(radius);
 
   return actor;

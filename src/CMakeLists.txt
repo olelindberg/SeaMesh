@@ -9,6 +9,7 @@ QuadTreeBuilder.cpp
 QuadTreeSearch.cpp
 QuadTree.cpp
 Profiler.cpp
+QuadTreePointsInserter.cpp
 )
 
 add_executable(SeaMesh ${SOURCE_FILES})

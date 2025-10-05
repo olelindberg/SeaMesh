@@ -89,7 +89,7 @@ public:
     vtkNew<vtkActor> actor;
     actor->SetMapper(mapper);
     vtkNew<vtkNamedColors> colors;
-    actor->GetProperty()->SetColor(colors->GetColor3d(color).GetData());
+    //    actor->GetProperty()->SetColor(colors->GetColor3d(color).GetData());
     return actor;
   }
 
