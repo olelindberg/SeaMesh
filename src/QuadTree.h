@@ -12,14 +12,15 @@ public:
 
   QuadTree(Eigen::Vector3d lower_, Eigen::Vector3d upper_, int lvl, int index_);
 
-  void balance();
-  void center(Eigen::Vector3d &c);
+  void   balance();
+  void   center(Eigen::Vector3d &c);
   double lengthx();
   double lengthy();
 
-  int get_depth() { return level; }
+  int                              get_depth() { return level; }
+  int                              get_level() { return level; }
   const std::shared_ptr<QuadTree> &get_parent() { return _parent; };
-  void set_parent(std::shared_ptr<QuadTree> &parent) { _parent = parent; };
+  void                             set_parent(std::shared_ptr<QuadTree> &parent) { _parent = parent; };
 
   const std::shared_ptr<QuadTree> &get_child(int i) { return trees[i]; };
 
@@ -28,7 +29,7 @@ public:
   double get_ymin() { return lower(1); }
   double get_ymax() { return upper(1); }
 
-  int level;
+  int             level;
   Eigen::Vector3d lower;
   Eigen::Vector3d upper;
   //  std::vector<Eigen::Vector3d> points;
@@ -36,7 +37,7 @@ public:
 
   int index;
 
-  int get_id() { return _id; }
+  int  get_id() { return _id; }
   void set_id(int id) { _id = id; }
 
   bool flag = false;
@@ -44,8 +45,7 @@ public:
 private:
   int _id = -1;
 
-  void insert_leaf(std::shared_ptr<QuadTree> q,
-                   std::vector<std::shared_ptr<QuadTree>> &quad_list);
+  void insert_leaf(std::shared_ptr<QuadTree> q, std::vector<std::shared_ptr<QuadTree>> &quad_list);
 
   std::shared_ptr<QuadTree> _parent;
 };

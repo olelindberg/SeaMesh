@@ -9,6 +9,7 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 #include "vtkRenderer.h"
 #include <vtkAxesActor.h>
 #include <vtkFollower.h>
+#include <vtkImageActor.h>
 #include <vtkInteractorStyleTrackballCamera.h>
 #include <vtkLineSource.h>
 #include <vtkNamedColors.h>
@@ -16,6 +17,7 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 #include <vtkPolyDataMapper.h>
 #include <vtkProperty.h>
 #include <vtkRenderWindowInteractor.h>
+#include <vtkSmartPointer.h>
 
 #include <vector>
 
@@ -25,10 +27,14 @@ VTK_MODULE_INIT(vtkInteractionStyle);
 
 class VtkRunner {
 public:
-  VtkRunner(std::vector<vtkSmartPointer<vtkActor>> actors,
-            std::vector<vtkSmartPointer<vtkFollower>> followers) {
+  VtkRunner(vtkSmartPointer<vtkImageActor> image_actor, std::vector<vtkSmartPointer<vtkActor>> actors, std::vector<vtkSmartPointer<vtkFollower>> followers) {
     std::cout << "Creating vtk renderer ...\n";
     vtkSmartPointer<vtkRenderer> renderer = vtkRenderer::New();
+
+    if (image_actor) {
+      std::cout << "Adding image actor to renderer ...\n";
+      renderer->AddActor(image_actor);
+    }
 
     std::cout << "Adding vtk actors to renderer ...\n";
     for (auto &actor : actors)
@@ -56,8 +62,7 @@ public:
     renderWindowInteractor->SetRenderWindow(renderWindow);
 
     std::cout << "Creating interactor style ...\n";
-    vtkSmartPointer<vtkInteractorStyleTrackballCamera> interactorStyle =
-        vtkInteractorStyleTrackballCamera::New();
+    vtkSmartPointer<vtkInteractorStyleTrackballCamera> interactorStyle = vtkInteractorStyleTrackballCamera::New();
     renderWindowInteractor->SetInteractorStyle(interactorStyle);
     renderWindowInteractor->GetInteractorStyle()->SetCurrentRenderer(renderer);
 

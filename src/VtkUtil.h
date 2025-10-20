@@ -29,38 +29,27 @@ public:
   /// @param radius Radius of the sphere
   /// @param color Color of the shere
   /// @return Pointer to a vtk actor
-  static vtkSmartPointer<vtkActor>
-  points(const std::vector<Eigen::Vector3d> &pointset, double radius = 30.0,
-         std::string color = "red");
+  static vtkSmartPointer<vtkActor> points(const std::vector<Eigen::Vector3d> &pointset, double radius = 30.0, std::string color = "red");
 
   /// @brief Creates a vtk actor for visualization of a point set
   /// @param points The points
   /// @param radius Radius of the sphere
   /// @param color Color of the shere
   /// @return Pointer to a vtk actor
-  static vtkSmartPointer<vtkActor>
-  points(vtkSmartPointer<vtkPoints> &points,
-         vtkSmartPointer<vtkCellArray> &vertices, double radius = 30.0,
-         std::string color = "red");
+  static vtkSmartPointer<vtkActor> points(vtkSmartPointer<vtkPoints> &points, vtkSmartPointer<vtkCellArray> &vertices, double radius = 30.0, std::string color = "red");
 
   /// @brief Creates a pixel visualization of a point set with color scale
   /// @param pointset
   /// @param zscale
   /// @return
-  static vtkSmartPointer<vtkActor>
-  pointsWithColorScale(const std::vector<Eigen::Vector3d> &pointset,
-                       double zscale);
-  static vtkSmartPointer<vtkActor>
-  pointsWithColorScale(vtkSmartPointer<vtkPoints> &points, double zscale = 1.0);
+  static vtkSmartPointer<vtkActor> pointsWithColorScale(const std::vector<Eigen::Vector3d> &pointset, double zscale);
+  static vtkSmartPointer<vtkActor> pointsWithColorScale(vtkSmartPointer<vtkPoints> &points, double zscale = 1.0);
 
   static vtkSmartPointer<vtkInteractorObserver> orientationMarker();
 
-  static vtkSmartPointer<vtkActor>
-  polyline(const std::vector<Eigen::Vector3d> &pointset,
-           std::string color = "Tomato");
+  static vtkSmartPointer<vtkActor> polyline(const std::vector<Eigen::Vector3d> &pointset, std::string color = "Tomato");
 
-  static vtkSmartPointer<vtkActor>
-  polyline(const std::vector<point_t> &pointset, std::string color = "Tomato") {
+  static vtkSmartPointer<vtkActor> polyline(const std::vector<point_t> &pointset, std::string color = "Tomato") {
     vtkSmartPointer<vtkPoints> points = vtkPoints::New();
     for (auto &point : pointset) {
       points->InsertNextPoint(point.get<0>(), point.get<1>(), 0.0);
@@ -68,8 +57,7 @@ public:
     return polyline(points, color);
   }
 
-  static vtkSmartPointer<vtkActor> polyline(vtkSmartPointer<vtkPoints> &points,
-                                            std::string color = "Tomato") {
+  static vtkSmartPointer<vtkActor> polyline(vtkSmartPointer<vtkPoints> &points, std::string color = "Tomato") {
     vtkNew<vtkPolyLine> polyLine;
     polyLine->GetPointIds()->SetNumberOfIds(points->GetNumberOfPoints());
     for (unsigned int i = 0; i < points->GetNumberOfPoints(); i++)
@@ -93,17 +81,16 @@ public:
     return actor;
   }
 
-  static std::vector<vtkSmartPointer<vtkActor>>
-  momentArrowActor(double rotations, double radius = 0.2) {
-    int N = 16;
-    double pi = std::acos(-1.0);
+  static std::vector<vtkSmartPointer<vtkActor>> momentArrowActor(double rotations, double radius = 0.2) {
+    int    N      = 16;
+    double pi     = std::acos(-1.0);
     double angmax = 2.0 * pi * rotations;
-    double x = std::cos(0.65 * angmax);
-    double y = std::sin(0.65 * angmax);
-    double z = 0.0 * std::fabs(3.0 * radius * angmax / (2.0 * pi));
+    double x      = std::cos(0.65 * angmax);
+    double y      = std::sin(0.65 * angmax);
+    double z      = 0.0 * std::fabs(3.0 * radius * angmax / (2.0 * pi));
 
     vtkNew<vtkConeSource> cone;
-    double cone_height = 0.35 * std::fabs(angmax);
+    double                cone_height = 0.35 * std::fabs(angmax);
     cone->SetResolution(N);
     cone->SetRadius(2.0 * radius);
     cone->SetHeight(cone_height);
@@ -128,10 +115,10 @@ public:
 
     vtkNew<vtkPoints> points;
     for (int i = 0; i < N; ++i) {
-      double pi = std::acos(-1.0);
+      double pi    = std::acos(-1.0);
       double theta = 2.0 * pi * double(i) / double(N - 1);
-      double x = radius * std::cos(theta);
-      double y = radius * std::sin(theta);
+      double x     = radius * std::cos(theta);
+      double y     = radius * std::sin(theta);
       points->InsertPoint(i, 1.0 + x, 0.0, y);
     }
 
@@ -166,9 +153,7 @@ public:
     return actors;
   }
 
-  static vtkSmartPointer<vtkActor>
-  forceArrowActor(const std::vector<double> &force, double force_scale,
-                  double radius = 0.1) {
+  static vtkSmartPointer<vtkActor> forceArrowActor(const std::vector<double> &force, double force_scale, double radius = 0.1) {
     vtkNew<vtkNamedColors> colors;
 
     // Create an arrow.

@@ -17,6 +17,7 @@ gdf          = gpd.read_file(fp)
 ids = []
 for i1, geom1 in enumerate(gdf.geometry):
     for i2, geom2 in enumerate(gdf.geometry):
+
         if (geom1.touches(geom2)):
 
             if not i1 in ids:
@@ -34,21 +35,8 @@ for id in ids[1:]:
 gdf.at[ids[0],"geometry"] = line
 
 
-#------------------------------------------------------------------------------
-# Convert linestrings to polygons
-#------------------------------------------------------------------------------
-gdf["geometry"] = gdf["geometry"].apply(lambda geom: Polygon(geom))
-
-#------------------------------------------------------------------------------
-# Outer bounding box boundary:
-#------------------------------------------------------------------------------
-minx, miny, maxx, maxy = gdf.total_bounds
-width                  = min(maxx-minx,maxy-miny)/2
-bbox_polygon           = shp.geometry.box(minx-width, miny-width, maxx+width, maxy+width)
-gdf.at[ids[1],"geometry"] = bbox_polygon
-
 # Remove the lines from the geo data frame:
-gdf.drop(ids[2:],inplace=True)
+gdf.drop(ids[1:],inplace=True)
 
 #------------------------------------------------------------------------------
 # Save:
@@ -59,7 +47,9 @@ gdf.to_file(fp)
 #------------------------------------------------------------------------------
 # Plot:
 #------------------------------------------------------------------------------
-for polygon in gdf.geometry:
-    x,y = polygon.exterior.xy
+for geom in gdf.geometry:
+    geom_type = geom.geom_type
+    print(f"Geometry type: {geom_type}")
+    x,y = geom.xy
     plt.plot(x,y)
 plt.show()
