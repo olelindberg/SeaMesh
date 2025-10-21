@@ -1,6 +1,6 @@
 #include "QuadTreeSeaBuilder.h"
+#include "BoostGeometryUtil.h"
 #include "QuadTreeSearch.h"
-
 #include <Eigen/Dense>
 
 #include <iostream>
@@ -23,31 +23,9 @@ QuadTreeSeaBuilder::QuadTreeSeaBuilder(int levelmax, double lengthmin, const std
     : _levelmax(levelmax), _lengthmin(lengthmin), _land_polygons(land_polygons)
 {
 
-  for (size_t p = 0; p < _land_polygons->size(); ++p)
-  {
-    auto const &poly = (*_land_polygons)[p];
-
-    // Outer ring
-    auto const &outer = poly.outer();
-    for (size_t i = 0; i + 1 < outer.size(); ++i)
-    {
-      segment_rtree.insert({segment_t(outer[i], outer[i + 1]), {p, 0, i}});
-    }
-
-    // Inner rings
-    for (size_t r = 0; r < poly.inners().size(); ++r)
-    {
-      auto const &inner = poly.inners()[r];
-      for (size_t i = 0; i + 1 < inner.size(); ++i)
-      {
-        segment_rtree.insert({segment_t(inner[i], inner[i + 1]), {p, r + 1, i}});
-      }
-    }
-  }
+  BoostGeomtryUtil::segment_rtree(*_land_polygons, _segment_rtree);
 
   _box_polygon.outer().resize(5);
-
-  _search_tree = std::make_shared<BoostRtreeSearch<polygon_t>>((*_land_polygons));
 }
 
 void QuadTreeSeaBuilder::create(std::shared_ptr<QuadTree> &tree)
@@ -60,21 +38,9 @@ void QuadTreeSeaBuilder::create(std::shared_ptr<QuadTree> &tree)
     box_to_polygon(box, _box_polygon);
 
     std::vector<segment_value_t> candidates;
-    segment_rtree.query(bgi::intersects(box), std::back_inserter(candidates));
+    _segment_rtree.query(bgi::intersects(box), std::back_inserter(candidates));
     if (candidates.empty())
       return;
-    //    auto results = _search_tree->intersects(box);
-    //    if (results.empty())
-    //      return;
-    //    multi_polygon_t polygons;
-    //    for (const auto &res : results)
-    //      polygons.push_back((*_land_polygons)[res.second]);
-    //
-    //    if (bg::disjoint(_box_polygon, polygons) || bg::within(_box_polygon, polygons))
-    //      return;
-
-    //    if (bg::disjoint(_box_polygon, *_land_polygons) || bg::within(_box_polygon, *_land_polygons))
-    //      return;
 
     this->subdivide(tree);
 

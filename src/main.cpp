@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "MortonTest.h"
 #include "OcTree.h"
+#include "OctreeNode.h"
 #include "QuadTree.h"
 #include "QuadTreeBuilder.h"
 #include "QuadTreePointsInserter.h"
@@ -18,6 +19,8 @@
 #include "VtkQuadTreeUtil.h"
 #include "VtkRunner.hpp"
 #include "VtkUtil.h"
+#include "octree_builder_land_polygon.h"
+#include "test_octree.h"
 
 #include <Eigen/Dense>
 #include <boost/geometry.hpp>
@@ -37,9 +40,11 @@ enum class COASTLINE_ID
 int main()
 {
 
+  // test_octree("/home/ole/tmp");
+
   //  MortonTest::run();
 
-  //  return 0;
+  // return 0;
 
   int polynomial_degree = 2;
 
@@ -123,7 +128,7 @@ int main()
   // int quadtree_depth = 2;
   double       quadtree_leaf_length   = 0.000001;
   double       lengthmin              = 10;
-  int          levelmax               = 14;
+  int          levelmax               = 10;
   bool         make_quadtree          = true;
   bool         show_quadtree          = true;
   bool         show_direction_vectors = true;
@@ -192,19 +197,27 @@ int main()
   quadtree               = std::make_shared<QuadTree>(Eigen::Vector3d(350000.0, 5900000.0, 0.0), Eigen::Vector3d(950000.0, 6500000.0, 0.0), 0, 0);
 
   Logger::info("Creating quadtree sea builder ...");
-  QuadTreeSeaBuilder qt_sea_builder(levelmax, lengthmin, multi_polygon);
+  //  QuadTreeSeaBuilder qt_sea_builder(levelmax, lengthmin, multi_polygon);
 
   Logger::info("Creating quadtree ...");
-  qt_sea_builder.create(quadtree);
+  //  qt_sea_builder.create(quadtree);
 
   Logger::info("Balancing quadtree ...");
-  qt_sea_builder.balance(quadtree);
+  //  qt_sea_builder.balance(quadtree);
+
+  OctreeNode root_node(0, 0, xmin, xmax, ymin, ymax, 0.0, dx);
+
+  OctreeBuilderLandPolygon octree_builder_land_polygon(levelmax, *multi_polygon);
+  octree_builder_land_polygon.build_tree(&root_node);
+
+  export_to_vtu(&root_node, "/home/ole/tmp/seamesh_octree.vtu");
+
+  return 0;
 
   //-------------------------------------------------------------------------
   // VTK stuff beyond this point!
   //-------------------------------------------------------------------------
   Logger::info("VTK stuff ...");
-  ;
 
   //-------------------------------------------------------------------------
   // 1) Create all actors and followers:
