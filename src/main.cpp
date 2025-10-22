@@ -1,3 +1,6 @@
+
+#include "test_directional_adaptive_octree.h"
+
 #include "BoostGeometryCreator.h"
 #include "BoostGeometryRtree.h"
 #include "BoostGeometryUtil.h"
@@ -23,6 +26,7 @@
 #include "test_octree.h"
 
 #include <Eigen/Dense>
+
 #include <boost/geometry.hpp>
 
 #include <iostream>
@@ -40,6 +44,9 @@ enum class COASTLINE_ID
 int main()
 {
 
+  test_directional_adaptive_octree();
+
+  return 0;
   // test_octree("/home/ole/tmp");
 
   //  MortonTest::run();
