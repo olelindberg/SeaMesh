@@ -7,7 +7,8 @@
 #include <mutex>
 #include <string>
 
-class Logger {
+class Logger
+{
 public:
   // Log an info message
   static void info(const std::string &msg) { log("INFO", msg); }
@@ -17,7 +18,8 @@ public:
 
 private:
   // Thread-safe logging
-  static void log(const std::string &level, const std::string &msg) {
+  static void log(const std::string &level, const std::string &msg)
+  {
     static std::mutex           mtx;
     std::lock_guard<std::mutex> lock(mtx);
 
@@ -29,7 +31,8 @@ private:
     std::string ts = std::ctime(&t);
     ts.pop_back();
 
-    std::cout << "[" << ts << "] [" << level << "] " << msg << std::endl;
+    // std::cout << "[" << ts << "] [" << level << "] " << msg << std::endl;
+    std::cout << "[" << level << "] " << msg << std::endl;
   }
 };
 

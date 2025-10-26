@@ -39,4 +39,13 @@ void collect_leaves(const OctreeNode *node, std::vector<const OctreeNode *> &lea
     collect_leaves(c.get(), leaves);
 }
 
+// ------------------------- Build children according to node->mask -------------------------
+auto compute_bounds = [](double minv, double maxv, int n, int idx)
+{
+  double mid = 0.5 * (minv + maxv);
+  if (n == 1)
+    return std::make_pair(minv, maxv);
+  return idx == 0 ? std::make_pair(minv, mid) : std::make_pair(mid, maxv);
+};
+
 #endif // OCTREE_UTIL_H
