@@ -1,6 +1,20 @@
 *.pos
 *.msh
 
+*.mxd
+*.dbf
+*.lyr
+*.prj
+*.qml
+*.cpg
+*.qgz
+
+*.sbn
+*.sbx
+*.shx
+*.shp
+*.shp.xml
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
