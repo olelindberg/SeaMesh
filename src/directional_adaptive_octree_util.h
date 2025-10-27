@@ -3,8 +3,10 @@
 
 #include "MortonUtil.h"
 #include "directional_adaptive_octree.h"
-#include "octree_refine_mask_util.h"
+#include "logger.h"
 #include "octree_util.h"
+#include "refine_mask_selector.h"
+#include "refine_mask_util.h"
 
 #include <cmath>
 #include <deque>
@@ -14,12 +16,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-class RefineMaskSelector
-{
-public:
-  virtual RefineMask operator()(const DirectionalAdaptiveOctree *node, double cx, double cy, double cz, int level_x, int level_y, int level_z) const = 0;
-};
 
 class RefineMaskSelectorExample : public RefineMaskSelector
 {
@@ -33,32 +29,32 @@ public:
     std::cout << "Choosing refinement at level " << level << " center=(" << cx << "," << cy << "," << cz << ")\n";
     RefineMask m = RefineMask::REFINE_NONE;
 
-    std::cout << "  preliminary mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  preliminary mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     std::cout << "  cz check: " << std::fabs(cz - 0.1) << "\n";
     if (std::fabs(cz - 0.1) < 0.2 && level < 4)
     {
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
     }
 
-    std::cout << "  preliminary mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  preliminary mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     std::cout << "  radial2D check: " << std::sqrt((cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5)) << "\n";
     //  if (std::sqrt((cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5)) < 0.2 && level < 3)
     //  {
-    //    m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-    //    m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
+    //    m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+    //    m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
     //  }
 
     double r2 = (cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5) + (cz - 0.5) * (cz - 0.5);
     std::cout << "  radial3D check: " << r2 << "\n";
     if (r2 < 0.2 && level < 5)
     {
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
     }
 
-    std::cout << "  chosen mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  chosen mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     return m;
   }
 };
@@ -194,7 +190,7 @@ public:
       std::cout << "  level_x=" << n->level_x << " level_y=" << n->level_y << " level_z=" << n->level_z << " morton=" << n->morton << " idx=(" << ix << ","
                 << iy << "," << iz << ")"
                 << " bbox=[(" << n->xmin << "," << n->ymin << "," << n->zmin << ")-(" << n->xmax << "," << n->ymax << "," << n->zmax << ")]"
-                << " mask=" << OctreeRefineMaskUtil::mask_to_string(n->mask) << "\n";
+                << " mask=" << RefineMaskUtil::mask_to_string(n->mask) << "\n";
     }
   }
 
@@ -345,7 +341,7 @@ public:
   // If the neighbor is too coarse, mark it for directional refinement (refine only axes necessary).
   static void balance_octree(DirectionalAdaptiveOctree *root)
   {
-    std::cout << "Starting face-only balancing (safe version)...\n";
+    Logger::info("Balancing octree ...");
 
     bool changed = true;
     int  iter    = 0;
@@ -389,22 +385,22 @@ public:
             // neighbor is coarser in at least one axis: refine neighbor
             coarse = nbr;
             if (dx > 1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_X);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_X);
             if (dy > 1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_Y);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_Y);
             if (dz > 1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_Z);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_Z);
           }
           else if (dx < -1 || dy < -1 || dz < -1)
           {
             // current node is coarser in at least one axis: refine current node
             coarse = n;
             if (dx < -1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_X);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_X);
             if (dy < -1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_Y);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_Y);
             if (dz < -1)
-              req = OctreeRefineMaskUtil::mask_or(req, RefineMask::REFINE_Z);
+              req = RefineMaskUtil::mask_or(req, RefineMask::REFINE_Z);
           }
 
           if (coarse && req != RefineMask::REFINE_NONE)
@@ -413,7 +409,7 @@ public:
             if (it == refine_requests.end())
               refine_requests[coarse] = req;
             else
-              it->second = OctreeRefineMaskUtil::mask_or(it->second, req);
+              it->second = RefineMaskUtil::mask_or(it->second, req);
           }
         }
       }
@@ -425,7 +421,7 @@ public:
         for (auto &[node, addmask] : refine_requests)
         {
           // Apply only new directions
-          RefineMask new_mask = OctreeRefineMaskUtil::mask_or(node->mask, addmask);
+          RefineMask new_mask = RefineMaskUtil::mask_or(node->mask, addmask);
           if (new_mask == node->mask)
             continue; // already refined
 
@@ -439,7 +435,7 @@ public:
           while (p)
           {
             RefineMask before = p->mask;
-            p->mask           = OctreeRefineMaskUtil::mask_or(p->mask, addmask);
+            p->mask           = RefineMaskUtil::mask_or(p->mask, addmask);
             if (p->mask == before)
               break;
             p = p->parent;
@@ -467,7 +463,7 @@ public:
       }
     }
 
-    std::cout << "Balancing complete.\n";
+    Logger::info("Balancing complete.");
   }
 
   // ------------------------- Simple function to print leaves info -------------------------
@@ -483,7 +479,7 @@ public:
       std::cout << "  level_x=" << n->level_x << " level_y=" << n->level_y << " level_z=" << n->level_z << " morton=" << n->morton << " idx=(" << ix << ","
                 << iy << "," << iz << ")"
                 << " bbox=[(" << n->xmin << "," << n->ymin << "," << n->zmin << ")-(" << n->xmax << "," << n->ymax << "," << n->zmax << ")]"
-                << " mask=" << OctreeRefineMaskUtil::mask_to_string(n->mask) << "\n";
+                << " mask=" << RefineMaskUtil::mask_to_string(n->mask) << "\n";
     }
   }
 
@@ -495,32 +491,32 @@ public:
     std::cout << "Choosing refinement at level " << level << " center=(" << cx << "," << cy << "," << cz << ")\n";
     RefineMask m = RefineMask::REFINE_NONE;
 
-    std::cout << "  preliminary mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  preliminary mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     std::cout << "  cz check: " << std::fabs(cz - 0.1) << "\n";
     if (std::fabs(cz - 0.1) < 0.2 && level < 4)
     {
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
     }
 
-    std::cout << "  preliminary mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  preliminary mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     std::cout << "  radial2D check: " << std::sqrt((cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5)) << "\n";
     //  if (std::sqrt((cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5)) < 0.2 && level < 3)
     //  {
-    //    m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-    //    m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
+    //    m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+    //    m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
     //  }
 
     double r2 = (cx - 0.5) * (cx - 0.5) + (cy - 0.5) * (cy - 0.5) + (cz - 0.5) * (cz - 0.5);
     std::cout << "  radial3D check: " << r2 << "\n";
     if (r2 < 0.2 && level < 5)
     {
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
-      m = OctreeRefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_X);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Y);
+      m = RefineMaskUtil::mask_or(m, RefineMask::REFINE_Z);
     }
 
-    std::cout << "  chosen mask: " << OctreeRefineMaskUtil::mask_to_string(m) << "\n";
+    std::cout << "  chosen mask: " << RefineMaskUtil::mask_to_string(m) << "\n";
     return m;
   }
 
@@ -626,7 +622,8 @@ public:
     ofs << "</VTKFile>\n";
 
     ofs.close();
-    std::cout << "✅ Wrote " << filename << " with " << leaves.size() << " cells.\n";
+
+    Logger::info("✅ Wrote " + filename + " with " + std::to_string(leaves.size()) + " cells.");
   }
 };
 

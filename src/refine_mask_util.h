@@ -1,5 +1,5 @@
-#ifndef OCTREE_REFINE_MASK_UTIL_H
-#define OCTREE_REFINE_MASK_UTIL_H
+#ifndef REFINE_MASK_UTIL_H
+#define REFINE_MASK_UTIL_H
 
 #include <cstdint>
 #include <string>
@@ -24,7 +24,7 @@ inline RefineMask &operator|=(RefineMask &a, RefineMask b)
 
 inline bool has_flag(RefineMask value, RefineMask flag) { return static_cast<uint8_t>(value & flag) != 0; }
 
-class OctreeRefineMaskUtil
+class RefineMaskUtil
 {
 public:
   static inline RefineMask mask_or(RefineMask a, RefineMask b) { return static_cast<RefineMask>(static_cast<int>(a) | static_cast<int>(b)); }
@@ -44,4 +44,4 @@ public:
   }
 };
 
-#endif // OCTREE_REFINE_MASK_UTIL_H
+#endif // REFINE_MASK_UTIL_H

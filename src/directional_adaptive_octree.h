@@ -1,7 +1,7 @@
 #ifndef DIRECTIONAL_ADAPTIVE_OCTREE_H
 #define DIRECTIONAL_ADAPTIVE_OCTREE_H
 
-#include "octree_refine_mask_util.h"
+#include "refine_mask_util.h"
 #include <cstdint>
 #include <memory>
 #include <vector>
