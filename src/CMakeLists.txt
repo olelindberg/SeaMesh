@@ -24,6 +24,7 @@ ${VTK_LIBRARIES}
 /usr/local/shapelib-1.5.0/lib/libshp.so
 Eigen3::Eigen
 GDAL::GDAL
+PROJ::proj
 )
 target_include_directories(SeaMesh PUBLIC
 /usr/local/shapelib-1.5.0/include  

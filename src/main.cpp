@@ -1,5 +1,7 @@
 
 #include "BoostGeometryCreator.h"
+#include "boost_multipolygon_vtk_writer.h"
+#include "geospatial_util.h"
 #include "land_polygon_refinement_mask.h"
 #include "test_directional_adaptive_octree.h"
 //#include "BoostGeometryRtree.h"
@@ -49,13 +51,15 @@ int main()
   bool   make_quadtree          = true;
   bool   show_quadtree          = true;
   bool   show_direction_vectors = true;
+  //[INFO] min : (3076896.422822, 3882017.010298)
+  //[INFO] max : (3420324.370211, 4318581.557322)
 
-  double xmin = 350000.0;
-  double ymin = 5900000.0;
+  double xmin = 3000000.0;
+  double ymin = 3800000.0;
   double zmin = 0.0;
 
-  double xmax = 950000.0;
-  double ymax = 6500000.0;
+  double xmax = 3500000.0;
+  double ymax = 4400000.0;
   double zmax = 100000.0;
 
   double lengthx = xmax - xmin;
@@ -94,6 +98,17 @@ int main()
   Logger::info("Removing small polygons ...");
   BoostGeomtryUtil::removeSmallPolygons(area_min, *multi_polygon);
 
+  GeospatialUtil::transform_multi_polygon(*multi_polygon, "EPSG:25832", "EPSG:3034");
+
+  box_t bbox;
+  bg::envelope(*multi_polygon, bbox);
+  auto min = bbox.min_corner();
+  auto max = bbox.max_corner();
+
+  Logger::info("Coastline bounding box:");
+  Logger::info("  min: (" + std::to_string(min.get<0>()) + ", " + std::to_string(min.get<1>()) + ")");
+  Logger::info("  max: (" + std::to_string(max.get<0>()) + ", " + std::to_string(max.get<1>()) + ")");
+
   Logger::info("Number of coastline polygons: " + std::to_string(multi_polygon->size()));
 
   //-------------------------------------------------------------------------//
@@ -113,6 +128,9 @@ int main()
   DirectionalAdaptiveOctreeUtil::build_directional_recursive(root.get(), levelmax, choose_refinement_pattern_example);
 
   DirectionalAdaptiveOctreeUtil::balance_octree(root.get());
+
+  auto pd = BoostMultiPolygonVtkWriter::multi_polygon_to_lines(*multi_polygon);
+  BoostMultiPolygonVtkWriter::write_vtp_lines(pd, "land_boundaries.vtp");
 
   Logger::info("Writing octree VTU ...");
   DirectionalAdaptiveOctreeUtil::write_vtu(root.get(), "/home/ole/tmp/seamesh_octree.vtu");

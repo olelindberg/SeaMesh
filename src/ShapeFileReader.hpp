@@ -25,6 +25,7 @@ public:
       double padfMinBound[4];
       double padfMaxBound[4];
       SHPGetInfo(shphandle, &pnEntities, &pnShapeType, padfMinBound, padfMaxBound);
+
       Logger::info("Shapefile reader: Opened shapefile: " + filename);
       Logger::info("Shapefile reader: Number of entities: " + std::to_string(pnEntities));
       Logger::info("Shapefile reader: Shape type: " + ShapeFileUtil::shape_type_to_string(pnShapeType));
