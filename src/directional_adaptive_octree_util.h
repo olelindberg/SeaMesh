@@ -566,7 +566,7 @@ public:
       for (int k = 0; k < 2; ++k)
         for (int j = 0; j < 2; ++j)
           for (int i = 0; i < 2; ++i)
-            ofs << x[i] << " " << y[j] << " " << z[k] << "\n";
+            ofs << y[j] << " " << x[i] << " " << z[k] << "\n";
     }
     ofs << "        </DataArray>\n";
     ofs << "      </Points>\n";

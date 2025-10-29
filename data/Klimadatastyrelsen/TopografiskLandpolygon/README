@@ -1,0 +1,8 @@
+This folder contains the "Topografisk Landpolygon" from Klimadatastyrelsen, see https://dataforsyningen.dk/data/4826.
+
+File            : landpolygon.gpkg
+Downloaded date : 5/10/2025
+Command         : curl --ssl -u user:passwd -O --ftp-ssl   ftps://ftp.dataforsyningen.dk/landpolygon/full/gpkg/landpolygon.gpkg
+
+Author: Ole Lindberg
+Date:   2025/10/29

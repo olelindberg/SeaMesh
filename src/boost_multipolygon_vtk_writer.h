@@ -53,7 +53,7 @@ public:
           double      x  = bg::get<0>(pt);
           double      y  = bg::get<1>(pt);
 
-          vtkIdType id = vtk_points->InsertNextPoint(x, y, 0.0);
+          vtkIdType id = vtk_points->InsertNextPoint(y, x, 0.0); // Note: VTK uses (y,x,z) ordering for geographic data
           polyLine->GetPointIds()->SetId(i, id);
         }
 

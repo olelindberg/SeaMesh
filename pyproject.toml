@@ -16,3 +16,8 @@ dependencies = [
     "triangle>=20250106",
     "xarray>=2025.6.1",
 ]
+
+[tool.uv.workspace]
+members = [
+    "util",
+]
