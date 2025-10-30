@@ -28,6 +28,5 @@ PROJ::proj
 )
 target_include_directories(SeaMesh PUBLIC
 /usr/local/shapelib-1.5.0/include  
-${GDAL_INCLUDE_DIR}
 ${Boost_INCLUDE_DIR}
 )

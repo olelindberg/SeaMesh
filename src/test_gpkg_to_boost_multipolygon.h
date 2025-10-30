@@ -88,7 +88,7 @@ static void collect_polygons(const OGRGeometry *g, std::vector<const OGRPolygon 
   {
     const OGRMultiPolygon *mp = g->toMultiPolygon();
     for (int i = 0; i < mp->getNumGeometries(); ++i)
-      out.push_back(mp->getGeometryRef(i)->toPolygon());
+      out.push_back(mp->getGeometryRef(i));
     return;
   }
   if (t == wkbGeometryCollection)

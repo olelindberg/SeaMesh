@@ -79,15 +79,6 @@ int main()
   geotiffreader.read();
 
   //-------------------------------------------------------------------------//
-  // Reading shape file polygons:
-  //-------------------------------------------------------------------------//
-  Logger::info("Reading coastline polygons ...");
-  ShapeFileReader shapefilereader;
-  shapefilereader.read("../../data/seamesh/Kystlinie_fixed.shp");
-  auto shape_polygons = shapefilereader.getPolygons();
-  Logger::info("Number of shape file polygons: " + std::to_string(shape_polygons->size()));
-
-  //-------------------------------------------------------------------------//
   // Create boost geometry multi polygon:
   //-------------------------------------------------------------------------//
   Logger::info("Creating boost geometry multi polygon ...");
@@ -95,47 +86,48 @@ int main()
 
   test_gpkg_to_boost_multipolygon("../../data/Klimadatastyrelsen/TopografiskLandpolygon/landpolygon.gpkg", *multi_polygon, "landpolygon_2500", projection);
 
-  // ShapeFileToBoostGeometry::create(*shape_polygons, *multi_polygon);
-
   //-------------------------------------------------------------------------//
   // Delete islands too small:
   //-------------------------------------------------------------------------//
   Logger::info("Removing small polygons ...");
   BoostGeomtryUtil::removeSmallPolygons(area_min, *multi_polygon);
 
-  // GeospatialUtil::transform_multi_polygon(*multi_polygon, "EPSG:25832", "EPSG:3034");
-
+  //-------------------------------------------------------------------------//
+  // Quick sanity: print bbox and polygon count
+  //-------------------------------------------------------------------------//
   box_t bbox;
   bg::envelope(*multi_polygon, bbox);
   auto min = bbox.min_corner();
   auto max = bbox.max_corner();
-
   Logger::info("Coastline bounding box:");
   Logger::info("  min: (" + std::to_string(min.get<0>()) + ", " + std::to_string(min.get<1>()) + ")");
   Logger::info("  max: (" + std::to_string(max.get<0>()) + ", " + std::to_string(max.get<1>()) + ")");
-
   Logger::info("Number of coastline polygons: " + std::to_string(multi_polygon->size()));
+
+  //-------------------------------------------------------------------------//
+  // Build segment R-tree for fast intersection tests
+  //------------------------------------------------------------------------//
+  Logger::info("Building segment R-tree ...");
+  segment_rtree_t segment_rtree;
+  BoostGeomtryUtil::segment_rtree(*multi_polygon, segment_rtree);
 
   //-------------------------------------------------------------------------//
   // Directional (anisotropic) octree with Morton codes and balancing.
   // Root domain: [0,1]^3, morton=0, level=0
   //-------------------------------------------------------------------------//
   Logger::info("Building directional adaptive octree ...");
-  segment_rtree_t segment_rtree;
-  BoostGeomtryUtil::segment_rtree(*multi_polygon, segment_rtree);
-
-  LandPolygonRefineMask choose_refinement_pattern_example(levelmax, segment_rtree);
-
+  LandPolygonRefineMask                      choose_refinement_pattern_example(levelmax, segment_rtree);
   std::unique_ptr<DirectionalAdaptiveOctree> root =
       std::make_unique<DirectionalAdaptiveOctree>(0ULL, 0, 0, 0, xmin, xmax, ymin, ymax, zmin, zmax, RefineMask::REFINE_NONE);
-
-  Logger::info("Initial directional build ...");
   DirectionalAdaptiveOctreeUtil::build_directional_recursive(root.get(), levelmax, choose_refinement_pattern_example);
-
   DirectionalAdaptiveOctreeUtil::balance_octree(root.get());
 
+  //-------------------------------------------------------------------------//
+  // Write outputs:
+  //-------------------------------------------------------------------------//
+  Logger::info("Writing coastline VTP ...");
   auto pd = BoostMultiPolygonVtkWriter::multi_polygon_to_lines(*multi_polygon);
-  BoostMultiPolygonVtkWriter::write_vtp_lines(pd, "land_boundaries.vtp");
+  BoostMultiPolygonVtkWriter::write_vtp_lines(pd, "/home/ole/tmp/land_boundaries.vtp");
 
   Logger::info("Writing octree VTU ...");
   DirectionalAdaptiveOctreeUtil::write_vtu(root.get(), "/home/ole/tmp/seamesh_octree.vtu");

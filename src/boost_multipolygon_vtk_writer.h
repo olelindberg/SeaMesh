@@ -2,6 +2,7 @@
 #define BOOST_MULTIPOLYGON_VTK_WRITER_H
 
 #include "BoostGeometryTypes.h"
+#include "logger.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/multi_polygon.hpp>
 
@@ -34,8 +35,8 @@ public:
       // Push outer ring
       rings.push_back(&poly.outer());
       // Push inner rings
-      for (auto const &r : poly.inners())
-        rings.push_back(&r);
+      //   for (auto const &r : poly.inners())
+      //     rings.push_back(&r);
 
       for (const auto *ring : rings)
       {
@@ -74,6 +75,8 @@ public:
     writer->SetInputData(pd);     // ✅ correct modern API
     writer->SetDataModeToAscii(); // ✅ easier debugging first
     writer->Write();
+    Logger::info("✅ Wrote " + filename + " with " + std::to_string(pd->GetNumberOfPoints()) + " points and " + std::to_string(pd->GetNumberOfLines()) +
+                 " polylines.");
   }
 };
 
